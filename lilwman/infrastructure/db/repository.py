@@ -1,6 +1,16 @@
 import re
 from datetime import datetime, timezone
 
+_FTS5_RESERVED = frozenset({"and", "or", "not"})
+
+
+def _sanitize_fts_query(query: str) -> str:
+    # Strip FTS5 special chars
+    cleaned = re.sub(r'[^\w\s]', ' ', query)
+    # Filter reserved words and empty tokens
+    tokens = [t for t in cleaned.split() if t.lower() not in _FTS5_RESERVED]
+    return ' '.join(tokens)
+
 from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
 
@@ -71,11 +81,9 @@ class SQLAlchemyEntryRepository(EntryRepository):
             return self._to_entity(model)
 
     async def search(self, query: str, limit: int = 20) -> list[Entry]:
-        cleaned = re.sub(r'[^\w\s]', ' ', query).strip()
-        if not cleaned:
+        fts_query = _sanitize_fts_query(query)
+        if not fts_query:
             return []
-        tokens = cleaned.split()
-        fts_query = ' OR '.join(tokens)
         async with self._session_factory() as session:
             rows = (
                 await session.execute(

@@ -15,11 +15,12 @@ class AskQueryUseCase:
             f"[{i+1}] (tags: {', '.join(e.tags) or 'none'})\n{e.content}"
             for i, e in enumerate(entries)
         )
+        safe_question = question.replace('\n', ' ').replace('\r', ' ')
         prompt = (
             "You are a helpful assistant. Answer the question using only the "
             "provided wiki entries. Be concise.\n\n"
             f"Wiki entries:\n{snippets}\n\n"
-            f"Question: {question}\n"
+            f"Question: {safe_question}\n"
             "Answer:"
         )
         return await self._llm.generate(prompt)
