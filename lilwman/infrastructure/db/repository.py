@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 
 from sqlalchemy import select, text
@@ -70,6 +71,11 @@ class SQLAlchemyEntryRepository(EntryRepository):
             return self._to_entity(model)
 
     async def search(self, query: str, limit: int = 20) -> list[Entry]:
+        cleaned = re.sub(r'[^\w\s]', ' ', query).strip()
+        if not cleaned:
+            return []
+        tokens = cleaned.split()
+        fts_query = ' OR '.join(tokens)
         async with self._session_factory() as session:
             rows = (
                 await session.execute(
@@ -82,7 +88,7 @@ class SQLAlchemyEntryRepository(EntryRepository):
                         LIMIT :lim
                         """
                     ),
-                    {"q": query, "lim": limit},
+                    {"q": fts_query, "lim": limit},
                 )
             ).fetchall()
 
