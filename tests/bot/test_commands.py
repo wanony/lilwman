@@ -26,6 +26,7 @@ def make_interaction(user_id="111", username="alice", is_admin=False):
     interaction.user.guild_permissions = MagicMock()
     interaction.user.guild_permissions.administrator = is_admin
     interaction.response = AsyncMock()
+    interaction.followup = AsyncMock()
     return interaction
 
 
@@ -186,3 +187,39 @@ async def test_tag_no_entries_sends_message():
 
     call_str = str(interaction.response.send_message.call_args)
     assert "no entries" in call_str.lower() or "nothing" in call_str.lower()
+
+
+# --- /ask ---
+from lilwman.bot.commands.ask import AskCog
+
+
+async def test_ask_sends_llm_answer():
+    ask_uc = AsyncMock()
+    ask_uc.execute = AsyncMock(return_value="The answer is 42.")
+    bot = make_bot(ask_query=ask_uc)
+
+    cog = AskCog(bot)
+    interaction = make_interaction()
+
+    await cog.ask.callback(cog, interaction, question="What is the answer?")
+
+    ask_uc.execute.assert_called_once_with("What is the answer?")
+    interaction.response.defer.assert_called_once()
+    interaction.followup.send.assert_called_once()
+    call_str = str(interaction.followup.send.call_args)
+    assert "42" in call_str
+
+
+async def test_ask_sends_not_found_message():
+    ask_uc = AsyncMock()
+    ask_uc.execute = AsyncMock(return_value="Nothing in the wiki about that.")
+    bot = make_bot(ask_query=ask_uc)
+
+    cog = AskCog(bot)
+    interaction = make_interaction()
+
+    await cog.ask.callback(cog, interaction, question="unknown topic")
+
+    interaction.response.defer.assert_called_once()
+    call_str = str(interaction.followup.send.call_args)
+    assert "nothing" in call_str.lower() or "wiki" in call_str.lower()
