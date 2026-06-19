@@ -1,0 +1,19 @@
+version: "0.5"
+processes:
+  ollama:
+    command: "ollama serve"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        path: "/"
+        port: 11434
+      initial_delay_seconds: 2
+      period_seconds: 5
+      failure_threshold: 10
+  bot:
+    command: "uv run python -m lilwman"
+    depends_on:
+      ollama:
+        condition: process_healthy
+    environment:
+      - "PYTHONUNBUFFERED=1"
