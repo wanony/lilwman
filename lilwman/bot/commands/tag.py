@@ -20,7 +20,7 @@ class TagCog(commands.Cog):
         for entry in entries[:10]:
             embed.add_field(
                 name=f"#{entry.id} — {entry.author_name}",
-                value=entry.content[:200],
+                value=entry.content[:200] or "​",
                 inline=False,
             )
         if len(entries) > 10:

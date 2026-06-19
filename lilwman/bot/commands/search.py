@@ -29,7 +29,7 @@ class SearchPaginator(discord.ui.View):
             tags = ", ".join(entry.tags) if entry.tags else "no tags"
             embed.add_field(
                 name=f"#{entry.id} — {entry.author_name} [{tags}]",
-                value=entry.content[:200],
+                value=entry.content[:200] or "​",
                 inline=False,
             )
         embed.set_footer(text=f"Page {self.page + 1}/{self.total_pages}")

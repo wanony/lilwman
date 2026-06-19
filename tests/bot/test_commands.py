@@ -107,11 +107,11 @@ async def test_search_no_results_sends_message():
     cog = SearchCog(bot)
     interaction = make_interaction()
 
-    await cog.search.callback(cog, interaction, query="nothing")
+    await cog.search.callback(cog, interaction, query="zzznomatch")
 
     interaction.response.send_message.assert_called_once()
     call_str = str(interaction.response.send_message.call_args)
-    assert "no results" in call_str.lower() or "nothing" in call_str.lower()
+    assert "no results" in call_str.lower()
 
 
 # --- /delete ---
@@ -132,6 +132,9 @@ async def test_delete_own_entry_sends_success():
         entry_id=5, author_id="111", is_admin=False
     )
     interaction.response.send_message.assert_called_once()
+    call_str = str(interaction.response.send_message.call_args)
+    assert "#5" in call_str
+    assert "ephemeral=True" in call_str or "True" in call_str
 
 
 async def test_delete_denied_sends_error():
@@ -165,6 +168,10 @@ async def test_tag_sends_embed_with_entries():
 
     list_uc.execute.assert_called_once_with("nix")
     interaction.response.send_message.assert_called_once()
+    kwargs = interaction.response.send_message.call_args.kwargs
+    assert "embed" in kwargs
+    embed = kwargs["embed"]
+    assert "nix" in embed.title.lower()
 
 
 async def test_tag_no_entries_sends_message():

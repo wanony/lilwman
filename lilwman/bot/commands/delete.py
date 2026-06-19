@@ -10,7 +10,7 @@ class DeleteCog(commands.Cog):
     @app_commands.command(name="delete", description="Delete a wiki entry")
     @app_commands.describe(id="ID of the entry to delete")
     async def delete(self, interaction: discord.Interaction, id: int) -> None:
-        is_admin = interaction.user.guild_permissions.administrator
+        is_admin = getattr(getattr(interaction.user, "guild_permissions", None), "administrator", False)
         deleted = await self.bot.delete_entry.execute(
             entry_id=id,
             author_id=str(interaction.user.id),
