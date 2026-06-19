@@ -31,7 +31,7 @@ class SQLAlchemyEntryRepository(EntryRepository):
         author_name: str,
     ) -> Entry:
         now = datetime.now(timezone.utc)
-        clean_tags = [t.strip() for t in tags if t.strip()]
+        clean_tags = [t.strip().lower() for t in tags if t.strip()]
         async with self._session_factory() as session:
             async with session.begin():
                 entry_model = EntryModel(
@@ -118,8 +118,9 @@ class SQLAlchemyEntryRepository(EntryRepository):
                 select(EntryModel)
                 .options(selectinload(EntryModel.tags))
                 .join(TagModel)
-                .where(TagModel.name == tag)
+                .where(TagModel.name == tag.lower())
                 .order_by(EntryModel.created_at.desc())
+                .limit(10)
             )
             return [self._to_entity(m) for m in result.scalars().unique().all()]
 

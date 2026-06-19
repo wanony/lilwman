@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from lilwman.application.store_entry import StoreEntryUseCase
@@ -43,6 +44,17 @@ class LilwmanBot(commands.Bot):
         guild = discord.Object(id=self.guild_id)
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
+
+    async def on_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: app_commands.AppCommandError,
+    ) -> None:
+        msg = "Something went wrong. Please try again."
+        if interaction.response.is_done():
+            await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
 
     async def on_ready(self) -> None:
         print(f"Logged in as {self.user} (ID: {self.user.id})")
