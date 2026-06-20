@@ -1,6 +1,13 @@
 import re
 from datetime import datetime, timezone
 
+from sqlalchemy import select, text
+from sqlalchemy.orm import selectinload
+
+from lilwman.domain.entities import Entry
+from lilwman.domain.ports import EntryRepository
+from .models import EntryModel, TagModel
+
 _FTS5_RESERVED = frozenset({"and", "or", "not"})
 
 
@@ -10,13 +17,6 @@ def _sanitize_fts_query(query: str) -> str:
     # Filter reserved words and empty tokens
     tokens = [t for t in cleaned.split() if t.lower() not in _FTS5_RESERVED]
     return ' '.join(tokens)
-
-from sqlalchemy import select, text
-from sqlalchemy.orm import selectinload
-
-from lilwman.domain.entities import Entry
-from lilwman.domain.ports import EntryRepository
-from .models import EntryModel, TagModel
 
 
 class SQLAlchemyEntryRepository(EntryRepository):
