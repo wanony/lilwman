@@ -1,5 +1,5 @@
 import pytest
-from lilwman.infrastructure.db.repository import SQLAlchemyEntryRepository
+from lilwman.infrastructure.db.repository import SQLAlchemyEntryRepository, _sanitize_fts_query
 
 
 @pytest.fixture
@@ -80,3 +80,58 @@ async def test_delete_any_entry_succeeds_as_admin(repo):
     deleted = await repo.delete(entry.id, author_id="111", is_admin=True)
     assert deleted is True
     assert await repo.get_by_id(entry.id) is None
+
+
+# --- _sanitize_fts_query unit tests ---
+
+def test_sanitize_removes_reserved_words():
+    assert _sanitize_fts_query("and or not") == ""
+
+
+def test_sanitize_removes_special_chars():
+    assert _sanitize_fts_query("python!!!") == "python"
+
+
+def test_sanitize_empty_string_returns_empty():
+    assert _sanitize_fts_query("") == ""
+
+
+def test_sanitize_preserves_normal_words():
+    assert _sanitize_fts_query("python nix") == "python nix"
+
+
+def test_sanitize_mixed_reserved_and_normal():
+    assert _sanitize_fts_query("and python not") == "python"
+
+
+# --- repository edge cases ---
+
+async def test_search_empty_query_returns_empty(repo):
+    await repo.save(content="something", tags=[], author_id="1", author_name="a")
+    results = await repo.search("")
+    assert results == []
+
+
+async def test_search_reserved_words_only_returns_empty(repo):
+    await repo.save(content="and or not", tags=[], author_id="1", author_name="a")
+    results = await repo.search("and or not")
+    assert results == []
+
+
+async def test_search_special_chars_sanitized(repo):
+    await repo.save(content="python is great", tags=[], author_id="1", author_name="a")
+    results = await repo.search("python!!!")
+    assert len(results) == 1
+    assert results[0].content == "python is great"
+
+
+async def test_delete_nonexistent_entry_returns_false(repo):
+    result = await repo.delete(9999, author_id="111", is_admin=True)
+    assert result is False
+
+
+async def test_list_by_tag_uppercase_input_matches_lowercase_stored(repo):
+    await repo.save(content="python entry", tags=["python"], author_id="1", author_name="a")
+    results = await repo.list_by_tag("PYTHON")
+    assert len(results) == 1
+    assert results[0].content == "python entry"
