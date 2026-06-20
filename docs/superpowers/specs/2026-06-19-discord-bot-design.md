@@ -83,16 +83,15 @@ entry_id    INTEGER NOT NULL REFERENCES entries(id) ON DELETE CASCADE
 name        TEXT NOT NULL
 ```
 
-**entries_fts** (FTS5 virtual table)
+**entries_fts** (FTS5 virtual table — standalone, app-layer managed)
 ```sql
 CREATE VIRTUAL TABLE entries_fts USING fts5(
+    entry_id UNINDEXED,
     content,
-    tags,
-    content=entries,
-    content_rowid=id
+    tags
 );
 ```
-Tags are denormalized into the FTS5 index as a space-separated string. App layer syncs FTS5 on insert/update/delete.
+Not an external content table — app layer explicitly inserts/updates/deletes rows in `entries_fts` in the same transaction as `entries`. `tags` column is a space-separated string of all tag names for that entry. `entry_id` is stored unindexed for joining back to `entries`.
 
 ### Domain entities
 
