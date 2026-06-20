@@ -40,3 +40,28 @@ async def test_ask_prompt_includes_wiki_entries(store, ask, mock_llm):
     prompt = mock_llm.generate.call_args[0][0]
     assert "The sky is blue" in prompt
     assert "sky blue" in prompt
+
+
+async def test_ask_with_all_stopwords_returns_not_found(ask, mock_llm):
+    # "what is the" are all stopwords; _keywords returns ""; falls back to full
+    # question "what is the" which won't match anything in an empty repo
+    answer = await ask.execute("what is the")
+    assert answer == "Nothing in the wiki about that."
+    mock_llm.generate.assert_not_called()
+
+
+async def test_ask_strips_newlines_from_question_in_prompt(store, ask, mock_llm):
+    await store.execute("security info topic details", ["security"], "1", "a")
+    await ask.execute("security\ninfo")
+    prompt = mock_llm.generate.call_args[0][0]
+    # The "Question:" line in the prompt must not contain a literal newline
+    question_section = prompt.split("Question:")[-1]
+    assert "\n" not in question_section.rstrip("\n").split("\n")[0]
+
+
+async def test_ask_keywords_filters_stopwords(store, ask, mock_llm):
+    await store.execute("python decorators guide", ["python"], "1", "a")
+    # "what is python" → keywords = "python" → finds match
+    answer = await ask.execute("what is python")
+    assert answer == "Paris is the capital of France."  # mock_llm returns this
+    mock_llm.generate.assert_called_once()

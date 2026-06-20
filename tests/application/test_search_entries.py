@@ -39,3 +39,15 @@ async def test_search_returns_multiple_ranked_results(store, search):
     await store.execute("javascript for web", ["js"], "3", "c")
     results = await search.execute("python")
     assert len(results) == 2
+
+
+async def test_search_respects_limit_of_20(store, search):
+    for i in range(21):
+        await store.execute(f"python entry number {i}", ["python"], str(i), f"user{i}")
+    results = await search.execute("python")
+    assert len(results) == 20
+
+
+async def test_search_empty_query_returns_empty(search):
+    results = await search.execute("")
+    assert results == []

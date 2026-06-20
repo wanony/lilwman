@@ -33,3 +33,10 @@ async def test_list_by_tag_ordered_by_creation(store, list_tag):
     results = await list_tag.execute("tag")
     assert len(results) == 3
     assert [r.id for r in results] == [entry3.id, entry2.id, entry1.id]
+
+
+async def test_list_by_tag_case_insensitive(store, list_tag):
+    await store.execute("python entry", ["Python"], "1", "a")
+    results = await list_tag.execute("PYTHON")
+    assert len(results) == 1
+    assert results[0].content == "python entry"
