@@ -35,10 +35,13 @@ class AskQueryUseCase:
         )
         safe_question = question.replace('\n', ' ').replace('\r', ' ')
         prompt = (
-            "You are a helpful assistant. Answer the question using only the "
-            "provided wiki entries. Be concise. "
-            "Preserve identifiers and codes exactly as written (e.g. 'wlt 1:', 'rule 2:') — "
-            "do not paraphrase or rename them.\n\n"
+            "You are a factual assistant. Answer the question using ONLY what is "
+            "explicitly stated in the provided wiki entries. Rules:\n"
+            "- Do not infer, guess, or add information not present in the entries\n"
+            "- Do not mention tags unless the question asks about them\n"
+            "- Preserve identifiers and codes exactly as written (e.g. 'wlt 1:', 'rule 2:')\n"
+            "- If the answer is simple, give a simple answer\n"
+            "- If the entries do not answer the question, say so\n\n"
             f"Wiki entries:\n{snippets}\n\n"
             f"Question: {safe_question}\n"
             "Answer:"
