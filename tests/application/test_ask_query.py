@@ -54,9 +54,9 @@ async def test_ask_strips_newlines_from_question_in_prompt(store, ask, mock_llm)
     await store.execute("security info topic details", ["security"], "1", "a")
     await ask.execute("security\ninfo")
     prompt = mock_llm.generate.call_args[0][0]
-    # The "Question:" line in the prompt must not contain a literal newline
-    question_section = prompt.split("Question:")[-1]
-    assert "\n" not in question_section.rstrip("\n").split("\n")[0]
+    # The question should be stripped of literal newlines
+    assert "security\ninfo" not in prompt
+    assert "security info" in prompt
 
 
 async def test_ask_keywords_filters_stopwords(store, ask, mock_llm):

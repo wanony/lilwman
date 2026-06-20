@@ -4,9 +4,10 @@ from lilwman.infrastructure.db.session import create_engine, create_session_fact
 
 
 async def test_create_engine_returns_async_engine(tmp_path):
+    from sqlalchemy.ext.asyncio import AsyncEngine
     db_path = str(tmp_path / "test.db")
     engine = create_engine(db_path)
-    assert engine is not None
+    assert isinstance(engine, AsyncEngine)
     await engine.dispose()
 
 

@@ -1,6 +1,3 @@
-import pytest
-from pydantic import ValidationError
-
 from lilwman.config import Settings
 
 

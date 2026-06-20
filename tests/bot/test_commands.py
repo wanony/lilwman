@@ -286,6 +286,7 @@ async def test_paginator_prev_button_clamped_at_zero():
     await p.prev.callback(interaction)
 
     assert p.page == 0
+    interaction.response.edit_message.assert_called_once()
 
 
 async def test_paginator_next_button_increments_page():
@@ -313,6 +314,7 @@ async def test_paginator_next_button_clamped_at_last_page():
     await p.next.callback(interaction)
 
     assert p.page == 1
+    interaction.response.edit_message.assert_called_once()
 
 
 # --- TagCog overflow ---
