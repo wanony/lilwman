@@ -223,3 +223,111 @@ async def test_ask_sends_not_found_message():
     interaction.response.defer.assert_called_once()
     call_str = str(interaction.followup.send.call_args)
     assert "nothing" in call_str.lower() or "wiki" in call_str.lower()
+
+
+# --- SearchPaginator ---
+from lilwman.bot.commands.search import SearchPaginator, PER_PAGE
+
+
+def test_paginator_total_pages_single_page():
+    results = [make_entry(id=i) for i in range(1, 4)]  # 3 entries < PER_PAGE(5)
+    p = SearchPaginator(results, "q")
+    assert p.total_pages == 1
+
+
+def test_paginator_total_pages_exact_boundary():
+    results = [make_entry(id=i) for i in range(1, PER_PAGE + 1)]  # exactly 5
+    p = SearchPaginator(results, "q")
+    assert p.total_pages == 1
+
+
+def test_paginator_total_pages_over_boundary():
+    results = [make_entry(id=i) for i in range(1, PER_PAGE + 2)]  # 6 entries
+    p = SearchPaginator(results, "q")
+    assert p.total_pages == 2
+
+
+def test_paginator_embed_title_includes_query():
+    results = [make_entry(id=1)]
+    p = SearchPaginator(results, "my search")
+    embed = p.make_embed()
+    assert "my search" in embed.title
+
+
+def test_paginator_embed_footer_shows_page_count():
+    results = [make_entry(id=i) for i in range(1, 7)]  # 2 pages
+    p = SearchPaginator(results, "q")
+    embed = p.make_embed()
+    assert "1/2" in embed.footer.text
+
+
+async def test_paginator_prev_button_decrements_page():
+    results = [make_entry(id=i) for i in range(1, 7)]  # 2 pages
+    p = SearchPaginator(results, "q")
+    p.page = 1
+
+    interaction = AsyncMock()
+    interaction.response = AsyncMock()
+
+    await p.prev.callback(interaction)
+
+    assert p.page == 0
+    interaction.response.edit_message.assert_called_once()
+
+
+async def test_paginator_prev_button_clamped_at_zero():
+    results = [make_entry(id=i) for i in range(1, 4)]
+    p = SearchPaginator(results, "q")
+    p.page = 0
+
+    interaction = AsyncMock()
+    interaction.response = AsyncMock()
+
+    await p.prev.callback(interaction)
+
+    assert p.page == 0
+
+
+async def test_paginator_next_button_increments_page():
+    results = [make_entry(id=i) for i in range(1, 7)]  # 2 pages
+    p = SearchPaginator(results, "q")
+    p.page = 0
+
+    interaction = AsyncMock()
+    interaction.response = AsyncMock()
+
+    await p.next.callback(interaction)
+
+    assert p.page == 1
+    interaction.response.edit_message.assert_called_once()
+
+
+async def test_paginator_next_button_clamped_at_last_page():
+    results = [make_entry(id=i) for i in range(1, 7)]  # 2 pages (0, 1)
+    p = SearchPaginator(results, "q")
+    p.page = 1  # already on last page
+
+    interaction = AsyncMock()
+    interaction.response = AsyncMock()
+
+    await p.next.callback(interaction)
+
+    assert p.page == 1
+
+
+# --- TagCog overflow ---
+async def test_tag_more_than_10_entries_shows_footer():
+    entries = [make_entry(id=i) for i in range(1, 13)]  # 12 entries
+    list_uc = AsyncMock()
+    list_uc.execute = AsyncMock(return_value=entries)
+    bot = make_bot(list_by_tag=list_uc)
+
+    cog = TagCog(bot)
+    interaction = make_interaction()
+
+    await cog.tag.callback(cog, interaction, name="popular")
+
+    kwargs = interaction.response.send_message.call_args.kwargs
+    embed = kwargs["embed"]
+    assert len(embed.fields) == 10
+    assert "12" in embed.footer.text
