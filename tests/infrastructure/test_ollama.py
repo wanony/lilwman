@@ -42,3 +42,19 @@ async def test_generate_uses_configured_model():
         model="qwen2.5:0.5b",
         prompt="test prompt",
     )
+
+
+async def test_generate_propagates_exception_from_client():
+    with patch(
+        "lilwman.infrastructure.llm.ollama.ollama.AsyncClient"
+    ) as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.generate = AsyncMock(
+            side_effect=RuntimeError("connection refused")
+        )
+        mock_client_cls.return_value = mock_client
+
+        llm = OllamaLLM(host="http://localhost:11434", model="qwen2.5:1.5b")
+
+        with pytest.raises(RuntimeError, match="connection refused"):
+            await llm.generate("test prompt")
