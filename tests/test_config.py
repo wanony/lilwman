@@ -66,3 +66,21 @@ def test_rss_bridge_url_custom():
         rss_bridge_url="http://mybridge:8080"
     )
     assert settings.rss_bridge_url == "http://mybridge:8080"
+
+
+def test_web_port_default():
+    from lilwman.config import Settings
+    s = Settings(discord_token="t", discord_guild_id=1)
+    assert s.web_port == 8080
+
+
+def test_web_base_url_default():
+    from lilwman.config import Settings
+    s = Settings(discord_token="t", discord_guild_id=1)
+    assert s.web_base_url == "http://localhost:8080"
+
+
+def test_discord_client_id_default_empty():
+    from lilwman.config import Settings
+    s = Settings(discord_token="t", discord_guild_id=1)
+    assert s.discord_client_id == ""

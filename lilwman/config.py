@@ -10,3 +10,9 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen2.5:1.5b"
     db_path: str = "data/lilwman.db"
     rss_bridge_url: str = "http://localhost:3000"
+    discord_client_id: str = ""
+    discord_client_secret: str = ""
+    web_base_url: str = "http://localhost:8080"
+    web_port: int = 8080
+    web_secret_key: str = ""
+    web_guild_id: str = ""

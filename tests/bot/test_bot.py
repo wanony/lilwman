@@ -17,6 +17,15 @@ def make_bot_instance():
         remove_feed=MagicMock(),
         list_feeds=MagicMock(),
         poll_feeds=MagicMock(),
+        get_stats=MagicMock(),
+        get_entry=MagicMock(),
+        edit_entry=MagicMock(),
+        list_all_entries=MagicMock(),
+        list_by_author=MagicMock(),
+        purge_by_author=MagicMock(),
+        purge_by_tag=MagicMock(),
+        get_guild_config=MagicMock(),
+        set_guild_config=MagicMock(),
     )
 
 
