@@ -35,7 +35,7 @@ def _make_entry(id=1):
                  author_name="Alice", created_at=now, updated_at=now)
 
 
-async def test_admin_stats_returns_embed(monkeypatch):
+async def test_admin_stats_returns_embed():
     now = datetime.now(timezone.utc)
     stats = BotStats(total_entries=5, entries_this_week=2, entries_this_month=4,
                      total_feeds=1, unique_tags=3, top_tags=[("py", 2)], top_authors=[("Alice", 5)])
@@ -109,6 +109,29 @@ async def test_admin_config_show_returns_embed():
 
     interaction.response.send_message.assert_called_once()
     assert interaction.response.send_message.call_args.kwargs.get("ephemeral") is True
+
+
+async def test_admin_purge_tag_shows_confirmation():
+    purge_uc = MagicMock()
+    purge_uc.execute = AsyncMock(return_value=3)
+    now = datetime.now(timezone.utc)
+    tagged_entries = [
+        Entry(id=i, content="x", tags=["spam"], author_id="u1",
+              author_name="Alice", created_at=now, updated_at=now)
+        for i in range(3)
+    ]
+    list_all_uc = MagicMock()
+    list_all_uc.execute = AsyncMock(return_value=(tagged_entries, 3))
+
+    cog = AdminCog(_make_bot(purge_by_tag=purge_uc, list_all_entries=list_all_uc))
+    interaction = _make_interaction()
+
+    await cog.purge_tag_cmd.callback(cog, interaction, tag="spam")
+
+    interaction.response.send_message.assert_called_once()
+    call_kwargs = interaction.response.send_message.call_args
+    assert call_kwargs.kwargs.get("ephemeral") is True
+    assert "view" in call_kwargs.kwargs
 
 
 async def test_store_restricted_blocks_non_admin(monkeypatch):

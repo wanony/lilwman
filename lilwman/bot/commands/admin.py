@@ -44,6 +44,12 @@ class AdminCog(commands.Cog):
                 value="\n".join(f"{t}: {c}" for t, c in stats.top_tags[:5]),
                 inline=False,
             )
+        if stats.top_authors:
+            embed.add_field(
+                name="Top authors",
+                value="\n".join(f"{a}: {c}" for a, c in stats.top_authors[:5]),
+                inline=False,
+            )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @admin.command(name="list-user", description="List entries by a user")

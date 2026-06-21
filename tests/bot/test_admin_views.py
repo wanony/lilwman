@@ -14,6 +14,8 @@ async def test_confirm_button_calls_callback():
 
     callback.assert_called_once()
     interaction.response.edit_message.assert_called_once()
+    # Verify button is disabled after confirm
+    assert view.confirm.disabled is True
 
 
 async def test_on_timeout_disables_button():
