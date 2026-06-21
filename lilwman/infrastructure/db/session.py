@@ -4,14 +4,22 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy import text
+from sqlalchemy import event, text
 
 from .models import Base
 from . import feed_models as _feed_models  # noqa: F401 — registers ORM models with Base
 
 
 def create_engine(db_path: str) -> AsyncEngine:
-    return create_async_engine(f"sqlite+aiosqlite:///{db_path}", echo=False)
+    engine = create_async_engine(f"sqlite+aiosqlite:///{db_path}", echo=False)
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    return engine
 
 
 def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:

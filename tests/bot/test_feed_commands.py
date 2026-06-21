@@ -168,3 +168,47 @@ async def test_feed_list_non_admin_denied():
 
     call_str = str(interaction.response.send_message.call_args).lower()
     assert "administrator" in call_str or "permission" in call_str
+
+
+async def test_feed_add_in_dm_denied():
+    cog = FeedCog(_make_bot())
+    interaction = _make_interaction(is_admin=True, channel_id=999)
+    interaction.guild_id = None  # simulate DM
+
+    await cog.feed_add.callback(cog, interaction, platform="instagram", account="testuser")
+
+    call_str = str(interaction.response.send_message.call_args).lower()
+    assert "server" in call_str or "guild" in call_str
+
+
+async def test_feed_addurl_in_dm_denied():
+    cog = FeedCog(_make_bot())
+    interaction = _make_interaction(is_admin=True, channel_id=999)
+    interaction.guild_id = None  # simulate DM
+
+    await cog.feed_addurl.callback(cog, interaction, url="https://example.com/feed.xml")
+
+    call_str = str(interaction.response.send_message.call_args).lower()
+    assert "server" in call_str or "guild" in call_str
+
+
+async def test_feed_remove_in_dm_denied():
+    cog = FeedCog(_make_bot())
+    interaction = _make_interaction(is_admin=True, channel_id=999)
+    interaction.guild_id = None  # simulate DM
+
+    await cog.feed_remove.callback(cog, interaction, id=1)
+
+    call_str = str(interaction.response.send_message.call_args).lower()
+    assert "server" in call_str or "guild" in call_str
+
+
+async def test_feed_list_in_dm_denied():
+    cog = FeedCog(_make_bot())
+    interaction = _make_interaction(is_admin=True, channel_id=999)
+    interaction.guild_id = None  # simulate DM
+
+    await cog.feed_list.callback(cog, interaction)
+
+    call_str = str(interaction.response.send_message.call_args).lower()
+    assert "server" in call_str or "guild" in call_str

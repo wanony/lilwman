@@ -24,6 +24,11 @@ class FeedCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Feed commands can only be used in a server.", ephemeral=True
+            )
+            return
         platform = platform.lower().strip()
         if platform not in SUPPORTED_PLATFORMS:
             await interaction.response.send_message(
@@ -54,6 +59,11 @@ class FeedCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Feed commands can only be used in a server.", ephemeral=True
+            )
+            return
         channel_id = str(interaction.channel_id)
         sub = await self.bot.add_feed.execute_custom_url(channel_id, url)
         if sub is None:
@@ -73,6 +83,11 @@ class FeedCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Feed commands can only be used in a server.", ephemeral=True
+            )
+            return
         channel_id = str(interaction.channel_id)
         deleted = await self.bot.remove_feed.execute(id, channel_id)
         if deleted:
@@ -87,6 +102,11 @@ class FeedCog(commands.Cog):
         if not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message(
                 "Administrator permission required.", ephemeral=True
+            )
+            return
+        if interaction.guild_id is None:
+            await interaction.response.send_message(
+                "Feed commands can only be used in a server.", ephemeral=True
             )
             return
         channel_id = str(interaction.channel_id)
