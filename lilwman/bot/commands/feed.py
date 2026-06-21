@@ -84,6 +84,11 @@ class FeedCog(commands.Cog):
 
     @feed.command(name="list", description="List feed subscriptions for this channel")
     async def feed_list(self, interaction: discord.Interaction) -> None:
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message(
+                "Administrator permission required.", ephemeral=True
+            )
+            return
         channel_id = str(interaction.channel_id)
         subs = await self.bot.list_feeds.execute(channel_id)
         if not subs:

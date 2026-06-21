@@ -156,3 +156,15 @@ async def test_feed_list_empty_channel():
 
     call_str = str(interaction.response.send_message.call_args).lower()
     assert "no feeds" in call_str
+
+
+async def test_feed_list_non_admin_denied():
+    list_uc = AsyncMock()
+    list_uc.execute = AsyncMock(return_value=[])
+    cog = FeedCog(_make_bot(list_feeds=list_uc))
+    interaction = _make_interaction(is_admin=False)
+
+    await cog.feed_list.callback(cog, interaction)
+
+    call_str = str(interaction.response.send_message.call_args).lower()
+    assert "administrator" in call_str or "permission" in call_str
