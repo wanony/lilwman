@@ -60,9 +60,7 @@ def redirect_with_flash(url: str, message: str) -> RedirectResponse:
 @router.get("/login")
 async def login_page(request: Request, error: str = ""):
     templates = request.app.state.templates
-    return templates.TemplateResponse(
-        "login.html", {"request": request, "error": error}
-    )
+    return templates.TemplateResponse(request, "login.html", {"error": error})
 
 
 @router.get("/auth/discord")
