@@ -65,7 +65,7 @@ class AdminCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
-        entries = await self.bot.list_by_author.execute(str(user.id))
+        entries = await self.bot.list_by_author.execute(str(user.id), guild_id=str(interaction.guild_id))
         if not entries:
             await interaction.response.send_message(
                 f"No entries for **{user.display_name}**.", ephemeral=True
@@ -130,7 +130,8 @@ class AdminCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
-        entries = await self.bot.list_by_author.execute(str(user.id))
+        guild_id = str(interaction.guild_id)
+        entries = await self.bot.list_by_author.execute(str(user.id), guild_id=guild_id)
         count = len(entries)
         if count == 0:
             await interaction.response.send_message(
@@ -139,7 +140,7 @@ class AdminCog(commands.Cog):
             return
 
         async def do_purge() -> int:
-            return await self.bot.purge_by_author.execute(str(user.id))
+            return await self.bot.purge_by_author.execute(str(user.id), guild_id=guild_id)
 
         view = ConfirmView(do_purge)
         await interaction.response.send_message(
