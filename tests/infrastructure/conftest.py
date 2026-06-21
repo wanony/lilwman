@@ -4,6 +4,7 @@ from sqlalchemy import text
 
 from lilwman.infrastructure.db.models import Base
 from lilwman.infrastructure.db import feed_models as _feed_models  # noqa: F401
+from lilwman.infrastructure.db import guild_config_models as _guild_config_models  # noqa: F401
 from lilwman.infrastructure.db.feed_repository import SQLAlchemyFeedRepository
 
 

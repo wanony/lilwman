@@ -14,6 +14,7 @@ class EntryModel(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     author_id: Mapped[str] = mapped_column(String, nullable=False)
     author_name: Mapped[str] = mapped_column(String, nullable=False)
+    guild_id: Mapped[str] = mapped_column(String, nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 

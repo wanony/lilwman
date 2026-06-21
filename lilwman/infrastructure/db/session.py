@@ -8,6 +8,7 @@ from sqlalchemy import event, text
 
 from .models import Base
 from . import feed_models as _feed_models  # noqa: F401 — registers ORM models with Base
+from . import guild_config_models as _guild_config_models  # noqa: F401
 
 
 def create_engine(db_path: str) -> AsyncEngine:

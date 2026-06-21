@@ -14,6 +14,7 @@ class FeedSubscriptionModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     channel_id: Mapped[str] = mapped_column(String, nullable=False)
+    guild_id: Mapped[str] = mapped_column(String, nullable=False, default="")
     platform: Mapped[str] = mapped_column(String, nullable=False)
     account_name: Mapped[str] = mapped_column(String, nullable=False)
     rss_url: Mapped[str] = mapped_column(String, nullable=False)
