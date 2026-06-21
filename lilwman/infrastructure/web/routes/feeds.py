@@ -10,6 +10,9 @@ router = APIRouter(prefix="/feeds")
 async def feeds_list(request: Request, user: dict = Depends(require_login)) -> HTMLResponse:
     flash = get_flash(request)
     feeds = await request.app.state.list_all_feeds.execute()
+    web_guild_id = request.app.state.web_guild_id
+    if web_guild_id:
+        feeds = [f for f in feeds if f.guild_id == web_guild_id]
     response = request.app.state.templates.TemplateResponse(
         request, "feeds.html", {"feeds": feeds, "user": user, "flash": flash}
     )

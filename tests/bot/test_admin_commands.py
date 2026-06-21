@@ -114,16 +114,8 @@ async def test_admin_config_show_returns_embed():
 async def test_admin_purge_tag_shows_confirmation():
     purge_uc = MagicMock()
     purge_uc.execute = AsyncMock(return_value=3)
-    now = datetime.now(timezone.utc)
-    tagged_entries = [
-        Entry(id=i, content="x", tags=["spam"], author_id="u1",
-              author_name="Alice", created_at=now, updated_at=now)
-        for i in range(3)
-    ]
-    list_all_uc = MagicMock()
-    list_all_uc.execute = AsyncMock(return_value=(tagged_entries, 3))
 
-    cog = AdminCog(_make_bot(purge_by_tag=purge_uc, list_all_entries=list_all_uc))
+    cog = AdminCog(_make_bot(purge_by_tag=purge_uc))
     interaction = _make_interaction()
 
     await cog.purge_tag_cmd.callback(cog, interaction, tag="spam")

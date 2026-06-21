@@ -26,13 +26,15 @@ def get_session_data(cookie: str | None, serializer: URLSafeTimedSerializer) -> 
         return None
 
 
-def build_oauth_url(client_id: str, redirect_uri: str) -> str:
+def build_oauth_url(client_id: str, redirect_uri: str, state: str = "") -> str:
     params = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": "identify guilds",
     }
+    if state:
+        params["state"] = state
     return f"https://discord.com/oauth2/authorize?{urlencode(params)}"
 
 
@@ -65,14 +67,25 @@ async def login_page(request: Request, error: str = ""):
 
 @router.get("/auth/discord")
 async def discord_oauth_redirect(request: Request) -> RedirectResponse:
+    import secrets
     redirect_uri = f"{request.app.state.web_base_url}/auth/callback"
-    url = build_oauth_url(request.app.state.client_id, redirect_uri)
-    return RedirectResponse(url)
+    state_val = secrets.token_urlsafe(32)
+    serializer = URLSafeTimedSerializer(request.app.state.secret_key)
+    signed_state = serializer.dumps(state_val)
+    url = build_oauth_url(request.app.state.client_id, redirect_uri, state=signed_state)
+    response = RedirectResponse(url)
+    response.set_cookie("oauth_state", signed_state, httponly=True, samesite="lax", max_age=600)
+    return response
 
 
 @router.get("/auth/callback")
-async def discord_oauth_callback(request: Request, code: str = "") -> Response:
+async def discord_oauth_callback(request: Request, code: str = "", state: str = "") -> Response:
     if not code:
+        return RedirectResponse("/login?error=auth_failed")
+
+    # Validate state to prevent CSRF
+    expected_state = request.cookies.get("oauth_state")
+    if not expected_state or expected_state != state:
         return RedirectResponse("/login?error=auth_failed")
 
     redirect_uri = f"{request.app.state.web_base_url}/auth/callback"

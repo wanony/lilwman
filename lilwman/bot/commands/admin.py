@@ -161,22 +161,13 @@ class AdminCog(commands.Cog):
                 "Administrator permission required.", ephemeral=True
             )
             return
-        all_result = await self.bot.list_all_entries.execute()
-        tagged_entries = [e for e in all_result[0] if tag.lower() in [t.lower() for t in e.tags]]
-        count = len(tagged_entries)
-
-        if count == 0:
-            await interaction.response.send_message(
-                f"No entries found with tag **{tag}**.", ephemeral=True
-            )
-            return
 
         async def do_purge() -> int:
             return await self.bot.purge_by_tag.execute(tag)
 
         view = ConfirmView(do_purge)
         await interaction.response.send_message(
-            f"This will delete entries tagged **{tag}** (~{count} entries). Confirm?",
+            f"This will delete all entries tagged **{tag}**. Confirm?",
             ephemeral=True,
             view=view,
         )
