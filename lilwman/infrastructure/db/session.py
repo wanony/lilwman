@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy import text
 
 from .models import Base
+from . import feed_models as _feed_models  # noqa: F401 — registers ORM models with Base
 
 
 def create_engine(db_path: str) -> AsyncEngine:

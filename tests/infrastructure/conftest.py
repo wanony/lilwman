@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import text
 
 from lilwman.infrastructure.db.models import Base
+from lilwman.infrastructure.db import feed_models as _feed_models  # noqa: F401
 
 
 @pytest.fixture
