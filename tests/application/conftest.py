@@ -7,6 +7,7 @@ from lilwman.infrastructure.db import feed_models as _feed_models  # noqa: F401
 from lilwman.infrastructure.db import guild_config_models as _guild_config_models  # noqa: F401
 from lilwman.infrastructure.db.repository import SQLAlchemyEntryRepository
 from lilwman.infrastructure.db.feed_repository import SQLAlchemyFeedRepository
+from lilwman.infrastructure.db.guild_config_repo import SQLAlchemyGuildConfigRepository
 
 
 @pytest.fixture
@@ -36,3 +37,8 @@ def repo(session_factory):
 @pytest.fixture
 def feed_repo(session_factory):
     return SQLAlchemyFeedRepository(session_factory)
+
+
+@pytest.fixture
+def guild_config_repo(session_factory):
+    return SQLAlchemyGuildConfigRepository(session_factory)

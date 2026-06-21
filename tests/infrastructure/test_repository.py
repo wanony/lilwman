@@ -135,3 +135,62 @@ async def test_list_by_tag_uppercase_input_matches_lowercase_stored(repo):
     results = await repo.list_by_tag("PYTHON")
     assert len(results) == 1
     assert results[0].content == "python entry"
+
+
+async def test_list_by_author_returns_entries_for_author(repo):
+    await repo.save("entry 1", [], "user1", "Alice", guild_id="g1")
+    await repo.save("entry 2", [], "user2", "Bob", guild_id="g1")
+    await repo.save("entry 3", [], "user1", "Alice", guild_id="g1")
+    results = await repo.list_by_author("user1")
+    assert len(results) == 2
+    assert all(e.author_id == "user1" for e in results)
+
+
+async def test_list_all_returns_paginated(repo):
+    for i in range(5):
+        await repo.save(f"entry {i}", [], "user1", "Alice")
+    entries, total = await repo.list_all(offset=0, limit=3)
+    assert total == 5
+    assert len(entries) == 3
+
+
+async def test_update_changes_content_and_tags(repo):
+    entry = await repo.save("original", ["old"], "user1", "Alice")
+    updated = await repo.update(entry.id, "updated content", ["new", "tag"])
+    assert updated is not None
+    assert updated.content == "updated content"
+    assert updated.tags == ["new", "tag"]
+
+
+async def test_update_nonexistent_returns_none(repo):
+    result = await repo.update(9999, "x", [])
+    assert result is None
+
+
+async def test_get_stats_counts_entries(repo):
+    await repo.save("e1", ["python"], "u1", "Alice", guild_id="g1")
+    await repo.save("e2", ["python", "discord"], "u2", "Bob", guild_id="g1")
+    stats = await repo.get_stats("g1")
+    assert stats["total_entries"] == 2
+    assert stats["unique_tags"] == 2
+    assert len(stats["top_tags"]) >= 1
+
+
+async def test_purge_by_author_deletes_entries(repo):
+    await repo.save("e1", [], "user1", "Alice")
+    await repo.save("e2", [], "user1", "Alice")
+    await repo.save("e3", [], "user2", "Bob")
+    count = await repo.purge_by_author("user1")
+    assert count == 2
+    entries, total = await repo.list_all()
+    assert total == 1
+
+
+async def test_purge_by_tag_deletes_entries(repo):
+    await repo.save("e1", ["spam"], "u1", "Alice")
+    await repo.save("e2", ["spam", "other"], "u2", "Bob")
+    await repo.save("e3", ["other"], "u3", "Carol")
+    count = await repo.purge_by_tag("spam")
+    assert count == 2
+    entries, total = await repo.list_all()
+    assert total == 1
