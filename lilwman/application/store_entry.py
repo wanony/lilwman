@@ -12,5 +12,6 @@ class StoreEntryUseCase:
         tags: list[str],
         author_id: str,
         author_name: str,
+        guild_id: str = "",
     ) -> Entry:
-        return await self._repo.save(content, tags, author_id, author_name)
+        return await self._repo.save(content, tags, author_id, author_name, guild_id=guild_id)
