@@ -1,3 +1,4 @@
+# lilwman/bot/bot.py
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -7,6 +8,10 @@ from lilwman.application.search_entries import SearchEntriesUseCase
 from lilwman.application.delete_entry import DeleteEntryUseCase
 from lilwman.application.list_by_tag import ListByTagUseCase
 from lilwman.application.ask_query import AskQueryUseCase
+from lilwman.application.add_feed import AddFeedUseCase
+from lilwman.application.remove_feed import RemoveFeedUseCase
+from lilwman.application.list_feeds import ListFeedsUseCase
+from lilwman.application.poll_feeds import PollFeedsUseCase
 
 
 class LilwmanBot(commands.Bot):
@@ -18,6 +23,10 @@ class LilwmanBot(commands.Bot):
         delete_entry: DeleteEntryUseCase,
         list_by_tag: ListByTagUseCase,
         ask_query: AskQueryUseCase,
+        add_feed: AddFeedUseCase,
+        remove_feed: RemoveFeedUseCase,
+        list_feeds: ListFeedsUseCase,
+        poll_feeds: PollFeedsUseCase,
     ) -> None:
         intents = discord.Intents.default()
         super().__init__(command_prefix="!", intents=intents)
@@ -27,6 +36,10 @@ class LilwmanBot(commands.Bot):
         self.delete_entry = delete_entry
         self.list_by_tag = list_by_tag
         self.ask_query = ask_query
+        self.add_feed = add_feed
+        self.remove_feed = remove_feed
+        self.list_feeds = list_feeds
+        self.poll_feeds = poll_feeds
 
     async def setup_hook(self) -> None:
         from lilwman.bot.commands.store import StoreCog
@@ -34,12 +47,16 @@ class LilwmanBot(commands.Bot):
         from lilwman.bot.commands.delete import DeleteCog
         from lilwman.bot.commands.tag import TagCog
         from lilwman.bot.commands.ask import AskCog
+        from lilwman.bot.commands.feed import FeedCog
+        from lilwman.bot.poller import FeedPoller
 
         await self.add_cog(StoreCog(self))
         await self.add_cog(SearchCog(self))
         await self.add_cog(DeleteCog(self))
         await self.add_cog(TagCog(self))
         await self.add_cog(AskCog(self))
+        await self.add_cog(FeedCog(self))
+        await self.add_cog(FeedPoller(self, self.poll_feeds))
 
         guild = discord.Object(id=self.guild_id)
         self.tree.copy_global_to(guild=guild)

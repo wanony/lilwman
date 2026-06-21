@@ -53,3 +53,16 @@ def test_settings_guild_id_is_int():
     s = Settings(discord_token="t", discord_guild_id=999888777)
     assert isinstance(s.discord_guild_id, int)
     assert s.discord_guild_id == 999888777
+
+
+def test_rss_bridge_url_default():
+    settings = Settings(discord_token="t", discord_guild_id=1)
+    assert settings.rss_bridge_url == "http://localhost:3000"
+
+
+def test_rss_bridge_url_custom():
+    settings = Settings(
+        discord_token="t", discord_guild_id=1,
+        rss_bridge_url="http://mybridge:8080"
+    )
+    assert settings.rss_bridge_url == "http://mybridge:8080"

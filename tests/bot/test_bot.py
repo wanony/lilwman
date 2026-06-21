@@ -13,6 +13,10 @@ def make_bot_instance():
         delete_entry=AsyncMock(),
         list_by_tag=AsyncMock(),
         ask_query=AsyncMock(),
+        add_feed=MagicMock(),
+        remove_feed=MagicMock(),
+        list_feeds=MagicMock(),
+        poll_feeds=MagicMock(),
     )
 
 
