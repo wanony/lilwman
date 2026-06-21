@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %} — Dashboard{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-lg shadow p-4">
+    <div class="text-3xl font-bold text-indigo-600">{{ stats.total_entries }}</div>
+    <div class="text-gray-500 text-sm mt-1">Total entries</div>
+  </div>
+  <div class="bg-white rounded-lg shadow p-4">
+    <div class="text-3xl font-bold text-green-600">{{ stats.entries_this_week }}</div>
+    <div class="text-gray-500 text-sm mt-1">This week</div>
+  </div>
+  <div class="bg-white rounded-lg shadow p-4">
+    <div class="text-3xl font-bold text-blue-600">{{ stats.total_feeds }}</div>
+    <div class="text-gray-500 text-sm mt-1">Feed subscriptions</div>
+  </div>
+  <div class="bg-white rounded-lg shadow p-4">
+    <div class="text-3xl font-bold text-purple-600">{{ stats.unique_tags }}</div>
+    <div class="text-gray-500 text-sm mt-1">Unique tags</div>
+  </div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div class="bg-white rounded-lg shadow p-5">
+    <h3 class="font-semibold mb-3 text-gray-700">Top Tags</h3>
+    {% for tag, count in stats.top_tags %}
+    <div class="flex justify-between items-center py-2 border-b last:border-0">
+      <span class="text-sm">{{ tag }}</span>
+      <span class="text-sm text-gray-500 font-medium">{{ count }}</span>
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm">No tags yet.</p>
+    {% endfor %}
+  </div>
+  <div class="bg-white rounded-lg shadow p-5">
+    <h3 class="font-semibold mb-3 text-gray-700">Top Authors</h3>
+    {% for author, count in stats.top_authors %}
+    <div class="flex justify-between items-center py-2 border-b last:border-0">
+      <span class="text-sm">{{ author }}</span>
+      <span class="text-sm text-gray-500 font-medium">{{ count }}</span>
+    </div>
+    {% else %}
+    <p class="text-gray-400 text-sm">No entries yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

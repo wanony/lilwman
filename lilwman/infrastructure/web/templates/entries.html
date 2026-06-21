@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %} — Entries{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+  <h2 class="text-2xl font-bold">Entries <span class="text-gray-400 text-lg">({{ total }})</span></h2>
+  <form method="get" class="flex gap-2">
+    <input name="q" value="{{ q }}" placeholder="Search content/tags…"
+           class="border rounded px-3 py-1.5 text-sm w-48">
+    <input name="author_id" value="{{ author_id }}" placeholder="Author ID…"
+           class="border rounded px-3 py-1.5 text-sm w-36">
+    <button type="submit" class="bg-indigo-600 text-white px-4 py-1.5 rounded text-sm">Filter</button>
+    {% if q or author_id %}<a href="/entries" class="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">Clear</a>{% endif %}
+  </form>
+</div>
+<div class="mb-4 flex gap-3">
+  <form method="post" action="/entries/purge/user" class="flex gap-2">
+    <input name="author_id" placeholder="Author ID" class="border rounded px-3 py-1 text-sm w-36">
+    <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm"
+            onclick="return confirm('Delete ALL entries for this author?')">Purge user</button>
+  </form>
+  <form method="post" action="/entries/purge/tag" class="flex gap-2">
+    <input name="tag" placeholder="Tag name" class="border rounded px-3 py-1 text-sm w-32">
+    <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-sm"
+            onclick="return confirm('Delete ALL entries with this tag?')">Purge tag</button>
+  </form>
+</div>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
+      <tr>
+        <th class="px-4 py-3 text-left w-12">ID</th>
+        <th class="px-4 py-3 text-left">Content</th>
+        <th class="px-4 py-3 text-left w-36">Tags</th>
+        <th class="px-4 py-3 text-left w-28">Author</th>
+        <th class="px-4 py-3 text-left w-24">Date</th>
+        <th class="px-4 py-3 text-left w-24">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr class="border-t hover:bg-gray-50">
+        <td class="px-4 py-2 text-gray-400">#{{ entry.id }}</td>
+        <td class="px-4 py-2">{{ entry.content[:120] }}{% if entry.content|length > 120 %}…{% endif %}</td>
+        <td class="px-4 py-2 text-gray-500">{{ entry.tags | join(', ') }}</td>
+        <td class="px-4 py-2">{{ entry.author_name }}</td>
+        <td class="px-4 py-2 text-gray-400">{{ entry.created_at.strftime('%Y-%m-%d') }}</td>
+        <td class="px-4 py-2 flex gap-3">
+          <a href="/entries/{{ entry.id }}/edit" class="text-indigo-600 hover:underline">Edit</a>
+          <form method="post" action="/entries/{{ entry.id }}/delete" class="inline">
+            <button type="submit" class="text-red-600 hover:underline"
+                    onclick="return confirm('Delete entry #{{ entry.id }}?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No entries found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="mt-4 flex gap-2 items-center">
+  {% if page > 1 %}
+  <a href="?q={{ q }}&author_id={{ author_id }}&page={{ page - 1 }}"
+     class="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">← Prev</a>
+  {% endif %}
+  <span class="text-sm text-gray-500">Page {{ page }}</span>
+  {% if has_next %}
+  <a href="?q={{ q }}&author_id={{ author_id }}&page={{ page + 1 }}"
+     class="px-3 py-1.5 border rounded text-sm hover:bg-gray-50">Next →</a>
+  {% endif %}
+</div>
+{% endblock %}

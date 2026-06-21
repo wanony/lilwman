@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %} — Config{% endblock %}
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">Guild Configuration</h2>
+<form method="post" action="/config" class="bg-white rounded-lg shadow p-6 max-w-lg">
+  <div class="mb-6">
+    <label class="flex items-start gap-3 cursor-pointer">
+      <input type="checkbox" name="store_restricted" value="true"
+             {% if config.store_restricted %}checked{% endif %}
+             class="mt-0.5 w-4 h-4 rounded text-indigo-600">
+      <div>
+        <span class="font-medium text-sm">Restrict /store to administrators</span>
+        <p class="text-xs text-gray-500 mt-0.5">
+          When enabled, only Discord administrators can use /store to add wiki entries.
+        </p>
+      </div>
+    </label>
+  </div>
+  <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-indigo-700">
+    Save configuration
+  </button>
+</form>
+{% endblock %}
