@@ -21,12 +21,13 @@ def _make_bot(add_feed=None, remove_feed=None, list_feeds=None):
     return bot
 
 
-def _make_interaction(is_admin=True, channel_id=999):
+def _make_interaction(is_admin=True, channel_id=999, guild_id=111):
     interaction = AsyncMock(spec=discord.Interaction)
     interaction.user = MagicMock()
     interaction.user.guild_permissions = MagicMock()
     interaction.user.guild_permissions.administrator = is_admin
     interaction.channel_id = channel_id
+    interaction.guild_id = guild_id
     interaction.response = AsyncMock()
     return interaction
 
@@ -39,7 +40,7 @@ async def test_feed_add_success():
 
     await cog.feed_add.callback(cog, interaction, platform="instagram", account="testuser")
 
-    add_uc.execute.assert_called_once_with("999", "instagram", "testuser")
+    add_uc.execute.assert_called_once_with("999", "instagram", "testuser", guild_id="111")
     call_str = str(interaction.response.send_message.call_args)
     assert "testuser" in call_str
 
@@ -84,7 +85,7 @@ async def test_feed_addurl_success():
 
     await cog.feed_addurl.callback(cog, interaction, url="https://example.com/feed.xml")
 
-    add_uc.execute_custom_url.assert_called_once_with("999", "https://example.com/feed.xml")
+    add_uc.execute_custom_url.assert_called_once_with("999", "https://example.com/feed.xml", guild_id="111")
 
 
 async def test_feed_addurl_non_admin_denied():

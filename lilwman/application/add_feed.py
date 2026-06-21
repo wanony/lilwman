@@ -27,13 +27,13 @@ class AddFeedUseCase:
         self._rss_bridge_url = rss_bridge_url
 
     async def execute(
-        self, channel_id: str, platform: str, account_name: str
+        self, channel_id: str, platform: str, account_name: str, guild_id: str = ""
     ) -> FeedSubscription | None:
         rss_url = build_rss_url(self._rss_bridge_url, platform, account_name)
-        return await self._repo.save(channel_id, platform, account_name, rss_url)
+        return await self._repo.save(channel_id, platform, account_name, rss_url, guild_id=guild_id)
 
     async def execute_custom_url(
-        self, channel_id: str, rss_url: str
+        self, channel_id: str, rss_url: str, guild_id: str = ""
     ) -> FeedSubscription | None:
         account_name = urlparse(rss_url).netloc or rss_url
-        return await self._repo.save(channel_id, "custom", account_name, rss_url)
+        return await self._repo.save(channel_id, "custom", account_name, rss_url, guild_id=guild_id)

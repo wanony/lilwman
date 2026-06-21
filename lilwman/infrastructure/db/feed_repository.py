@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.exc import IntegrityError
 
 from lilwman.domain.feed_entities import FeedSubscription
@@ -19,6 +19,7 @@ class SQLAlchemyFeedRepository(FeedRepository):
         now = datetime.now(timezone.utc)
         model = FeedSubscriptionModel(
             channel_id=channel_id,
+            guild_id=guild_id,
             platform=platform,
             account_name=account_name,
             rss_url=rss_url,
@@ -34,6 +35,7 @@ class SQLAlchemyFeedRepository(FeedRepository):
         return FeedSubscription(
             id=model.id,
             channel_id=channel_id,
+            guild_id=guild_id,
             platform=platform,
             account_name=account_name,
             rss_url=rss_url,
@@ -43,12 +45,17 @@ class SQLAlchemyFeedRepository(FeedRepository):
     async def delete(self, feed_id: int, channel_id: str, admin: bool = False) -> bool:
         async with self._session_factory() as session:
             async with session.begin():
-                result = await session.execute(
-                    select(FeedSubscriptionModel).where(
-                        FeedSubscriptionModel.id == feed_id,
-                        FeedSubscriptionModel.channel_id == channel_id,
+                if admin:
+                    result = await session.execute(
+                        select(FeedSubscriptionModel).where(FeedSubscriptionModel.id == feed_id)
                     )
-                )
+                else:
+                    result = await session.execute(
+                        select(FeedSubscriptionModel).where(
+                            FeedSubscriptionModel.id == feed_id,
+                            FeedSubscriptionModel.channel_id == channel_id,
+                        )
+                    )
                 model = result.scalar_one_or_none()
                 if model is None:
                     return False
@@ -96,12 +103,17 @@ class SQLAlchemyFeedRepository(FeedRepository):
                 )
 
     async def count_for_guild(self, guild_id: str) -> int:
-        raise NotImplementedError
+        async with self._session_factory() as session:
+            q = select(func.count(FeedSubscriptionModel.id))
+            if guild_id:
+                q = q.where(FeedSubscriptionModel.guild_id == guild_id)
+            return (await session.execute(q)).scalar() or 0
 
     def _to_entity(self, model: FeedSubscriptionModel) -> FeedSubscription:
         return FeedSubscription(
             id=model.id,
             channel_id=model.channel_id,
+            guild_id=model.guild_id,
             platform=model.platform,
             account_name=model.account_name,
             rss_url=model.rss_url,

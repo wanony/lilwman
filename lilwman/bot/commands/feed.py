@@ -39,7 +39,8 @@ class FeedCog(commands.Cog):
             )
             return
         channel_id = str(interaction.channel_id)
-        sub = await self.bot.add_feed.execute(channel_id, platform, account)
+        guild_id = str(interaction.guild_id) if interaction.guild_id else ""
+        sub = await self.bot.add_feed.execute(channel_id, platform, account, guild_id=guild_id)
         if sub is None:
             await interaction.response.send_message(
                 f"Already subscribed to **{account}** on **{platform}** in this channel.",
@@ -65,7 +66,8 @@ class FeedCog(commands.Cog):
             )
             return
         channel_id = str(interaction.channel_id)
-        sub = await self.bot.add_feed.execute_custom_url(channel_id, url)
+        guild_id = str(interaction.guild_id) if interaction.guild_id else ""
+        sub = await self.bot.add_feed.execute_custom_url(channel_id, url, guild_id=guild_id)
         if sub is None:
             await interaction.response.send_message(
                 "Already subscribed to that URL in this channel.", ephemeral=True

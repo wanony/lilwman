@@ -106,3 +106,23 @@ async def test_delete_cascades_seen_posts(feed_repo):
     # After deletion, re-adding the same feed and checking old guid should return False
     sub2 = await feed_repo.save("111", "instagram", "user", "http://bridge/feed")
     assert await feed_repo.is_seen(sub2.id, "post-001") is False
+
+
+async def test_save_stores_guild_id(feed_repo):
+    sub = await feed_repo.save("ch1", "reddit", "python", "http://x.com", guild_id="g1")
+    assert sub is not None
+    assert sub.guild_id == "g1"
+
+
+async def test_count_for_guild_returns_correct_count(feed_repo):
+    await feed_repo.save("ch1", "reddit", "python", "http://a.com", guild_id="g1")
+    await feed_repo.save("ch2", "twitter", "test", "http://b.com", guild_id="g1")
+    await feed_repo.save("ch3", "reddit", "other", "http://c.com", guild_id="g2")
+    assert await feed_repo.count_for_guild("g1") == 2
+    assert await feed_repo.count_for_guild("g2") == 1
+
+
+async def test_delete_admin_bypasses_channel_check(feed_repo):
+    sub = await feed_repo.save("ch1", "reddit", "python", "http://x.com", guild_id="g1")
+    deleted = await feed_repo.delete(sub.id, channel_id="different_channel", admin=True)
+    assert deleted is True

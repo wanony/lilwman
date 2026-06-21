@@ -71,3 +71,10 @@ async def test_add_feed_custom_url_duplicate_returns_none(feed_repo):
     await uc.execute_custom_url("111", "https://example.com/feed.xml")
     result = await uc.execute_custom_url("111", "https://example.com/feed.xml")
     assert result is None
+
+
+async def test_execute_passes_guild_id_to_repo(feed_repo):
+    uc = AddFeedUseCase(feed_repo, "http://bridge.local")
+    sub = await uc.execute("ch1", "reddit", "python", guild_id="g123")
+    assert sub is not None
+    assert sub.guild_id == "g123"
