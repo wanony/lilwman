@@ -146,6 +146,14 @@ async def test_list_by_author_returns_entries_for_author(repo):
     assert all(e.author_id == "user1" for e in results)
 
 
+async def test_list_by_author_filters_by_guild_id(repo):
+    await repo.save("e1", [], "user1", "Alice", guild_id="g1")
+    await repo.save("e2", [], "user1", "Alice", guild_id="g2")
+    results = await repo.list_by_author("user1", guild_id="g1")
+    assert len(results) == 1
+    assert results[0].guild_id == "g1"
+
+
 async def test_list_all_returns_paginated(repo):
     for i in range(5):
         await repo.save(f"entry {i}", [], "user1", "Alice")

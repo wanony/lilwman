@@ -1,7 +1,7 @@
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select, text
+from sqlalchemy import delete as sa_delete, func, select, text
 from sqlalchemy.orm import selectinload
 
 from lilwman.domain.entities import Entry
@@ -163,7 +163,6 @@ class SQLAlchemyEntryRepository(EntryRepository):
     async def list_all(
         self, guild_id: str = "", offset: int = 0, limit: int = 20
     ) -> tuple[list[Entry], int]:
-        from sqlalchemy import func
         async with self._session_factory() as session:
             count_q = select(func.count(EntryModel.id))
             q = (
@@ -225,8 +224,6 @@ class SQLAlchemyEntryRepository(EntryRepository):
         )
 
     async def get_stats(self, guild_id: str) -> dict:
-        from datetime import timedelta
-        from sqlalchemy import func
         now = datetime.now(timezone.utc)
         week_ago = now - timedelta(days=7)
         month_ago = now - timedelta(days=30)
@@ -243,7 +240,7 @@ class SQLAlchemyEntryRepository(EntryRepository):
             month_q = select(func.count(EntryModel.id)).where(EntryModel.created_at >= month_ago)
             entries_this_month = (await session.execute(_gf(month_q))).scalar() or 0
 
-            tag_count_q = select(func.count(func.distinct(TagModel.name))).join(
+            tag_count_q = select(func.count(TagModel.name.distinct())).join(
                 EntryModel, TagModel.entry_id == EntryModel.id
             )
             if guild_id:
@@ -279,7 +276,6 @@ class SQLAlchemyEntryRepository(EntryRepository):
         }
 
     async def purge_by_author(self, author_id: str, guild_id: str = "") -> int:
-        from sqlalchemy import delete as sa_delete
         async with self._session_factory() as session:
             async with session.begin():
                 q = select(EntryModel.id).where(EntryModel.author_id == author_id)
@@ -288,15 +284,12 @@ class SQLAlchemyEntryRepository(EntryRepository):
                 ids = [r[0] for r in (await session.execute(q)).fetchall()]
                 if not ids:
                     return 0
-                for eid in ids:
-                    await session.execute(
-                        text("DELETE FROM entries_fts WHERE entry_id = :eid"), {"eid": eid}
-                    )
+                placeholders = ",".join(str(i) for i in ids)
+                await session.execute(text(f"DELETE FROM entries_fts WHERE entry_id IN ({placeholders})"))
                 await session.execute(sa_delete(EntryModel).where(EntryModel.id.in_(ids)))
                 return len(ids)
 
     async def purge_by_tag(self, tag: str, guild_id: str = "") -> int:
-        from sqlalchemy import delete as sa_delete
         clean_tag = tag.strip().lower()
         async with self._session_factory() as session:
             async with session.begin():
@@ -310,10 +303,8 @@ class SQLAlchemyEntryRepository(EntryRepository):
                 ids = [r[0] for r in (await session.execute(q)).fetchall()]
                 if not ids:
                     return 0
-                for eid in ids:
-                    await session.execute(
-                        text("DELETE FROM entries_fts WHERE entry_id = :eid"), {"eid": eid}
-                    )
+                placeholders = ",".join(str(i) for i in ids)
+                await session.execute(text(f"DELETE FROM entries_fts WHERE entry_id IN ({placeholders})"))
                 await session.execute(sa_delete(EntryModel).where(EntryModel.id.in_(ids)))
                 return len(ids)
 

@@ -46,10 +46,11 @@ class SQLAlchemyGuildConfigRepository(GuildConfigRepository):
                 else:
                     model.store_restricted = store_restricted
                     model.updated_at = now
+                created_at = model.created_at
         return GuildConfig(
             guild_id=guild_id,
             store_restricted=store_restricted,
-            created_at=model.created_at,
+            created_at=created_at,
             updated_at=now,
         )
 
