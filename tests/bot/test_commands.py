@@ -18,13 +18,14 @@ def make_bot(store_entry=None, search_entries=None, delete_entry=None,
     return bot
 
 
-def make_interaction(user_id="111", username="alice", is_admin=False):
+def make_interaction(user_id="111", username="alice", is_admin=False, guild_id=None):
     interaction = AsyncMock(spec=discord.Interaction)
     interaction.user = MagicMock()
     interaction.user.id = user_id
     interaction.user.display_name = username
     interaction.user.guild_permissions = MagicMock()
     interaction.user.guild_permissions.administrator = is_admin
+    interaction.guild_id = guild_id
     interaction.response = AsyncMock()
     interaction.followup = AsyncMock()
     return interaction
@@ -75,6 +76,7 @@ async def test_store_command_passes_tags_to_use_case():
         tags=["a", "b"],
         author_id="111",
         author_name="alice",
+        guild_id="",
     )
 
 
