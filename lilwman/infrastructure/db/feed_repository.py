@@ -13,7 +13,8 @@ class SQLAlchemyFeedRepository(FeedRepository):
         self._session_factory = session_factory
 
     async def save(
-        self, channel_id: str, platform: str, account_name: str, rss_url: str
+        self, channel_id: str, platform: str, account_name: str,
+        rss_url: str, guild_id: str = "",
     ) -> FeedSubscription | None:
         now = datetime.now(timezone.utc)
         model = FeedSubscriptionModel(
@@ -39,7 +40,7 @@ class SQLAlchemyFeedRepository(FeedRepository):
             created_at=now,
         )
 
-    async def delete(self, feed_id: int, channel_id: str) -> bool:
+    async def delete(self, feed_id: int, channel_id: str, admin: bool = False) -> bool:
         async with self._session_factory() as session:
             async with session.begin():
                 result = await session.execute(
@@ -93,6 +94,9 @@ class SQLAlchemyFeedRepository(FeedRepository):
                 await session.execute(
                     delete(SeenPostModel).where(SeenPostModel.seen_at < cutoff)
                 )
+
+    async def count_for_guild(self, guild_id: str) -> int:
+        raise NotImplementedError
 
     def _to_entity(self, model: FeedSubscriptionModel) -> FeedSubscription:
         return FeedSubscription(

@@ -10,6 +10,7 @@ class FeedSubscription:
     account_name: str
     rss_url: str
     created_at: datetime
+    guild_id: str = ""
 
 
 @dataclass

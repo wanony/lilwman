@@ -29,6 +29,7 @@ class SQLAlchemyEntryRepository(EntryRepository):
         tags: list[str],
         author_id: str,
         author_name: str,
+        guild_id: str = "",
     ) -> Entry:
         now = datetime.now(timezone.utc)
         clean_tags = [t.strip().lower() for t in tags if t.strip()]
@@ -143,6 +144,26 @@ class SQLAlchemyEntryRepository(EntryRepository):
                     {"eid": entry_id},
                 )
                 return True
+
+    async def list_by_author(self, author_id: str, guild_id: str = "") -> list[Entry]:
+        raise NotImplementedError
+
+    async def list_all(
+        self, guild_id: str = "", offset: int = 0, limit: int = 20
+    ) -> tuple[list[Entry], int]:
+        raise NotImplementedError
+
+    async def update(self, entry_id: int, content: str, tags: list[str]) -> Entry | None:
+        raise NotImplementedError
+
+    async def get_stats(self, guild_id: str) -> dict:
+        raise NotImplementedError
+
+    async def purge_by_author(self, author_id: str, guild_id: str = "") -> int:
+        raise NotImplementedError
+
+    async def purge_by_tag(self, tag: str, guild_id: str = "") -> int:
+        raise NotImplementedError
 
     def _to_entity(self, model: EntryModel) -> Entry:
         return Entry(
