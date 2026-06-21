@@ -5,6 +5,7 @@ from sqlalchemy import text
 from lilwman.infrastructure.db.models import Base
 from lilwman.infrastructure.db import feed_models as _feed_models  # noqa: F401
 from lilwman.infrastructure.db.repository import SQLAlchemyEntryRepository
+from lilwman.infrastructure.db.feed_repository import SQLAlchemyFeedRepository
 
 
 @pytest.fixture
@@ -29,3 +30,8 @@ async def session_factory():
 @pytest.fixture
 def repo(session_factory):
     return SQLAlchemyEntryRepository(session_factory)
+
+
+@pytest.fixture
+def feed_repo(session_factory):
+    return SQLAlchemyFeedRepository(session_factory)
